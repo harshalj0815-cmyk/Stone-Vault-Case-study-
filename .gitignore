@@ -1,0 +1,6 @@
+﻿.vercel
+*.mpeg
+design/export-1793296962892.mp4
+design/ui-camera-loop.mp4
+design/video/render/
+node_modules/

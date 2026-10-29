@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Stone Vault · Project</title>
+  <link rel="icon" type="image/png" href="stone-vault-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css"
+  />
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"
+  />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --sidebar: #f5f8ff;
+      --border: rgba(18, 23, 34, 0.10);
+      --separator: rgba(18, 23, 34, 0.08);
+      --hover: #f3f6ff;
+      --blue-ink: #2f6bff;
+      --blue-deep: #1e52db;
+      --blue: #c2d4ff;
+      --blue-soft: #eef3ff;
+      --ring: rgba(47, 107, 255, 0.32);
+      --text: #121722;
+      --muted: #6b7585;
+      --font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --space: 8px;
+      --hit: 44px;
+      --content: 920px;
+      --hero: 100%;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button {
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+      border: 0;
+      background: none;
+    }
+    img, video { display: block; max-width: 100%; }
+
+    /* Top bar — overlays hero until scroll docks the brand */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      display: flex;
+      justify-content: center;
+      padding:
+        max(10px, env(safe-area-inset-top, 0px))
+        16px
+        10px;
+      pointer-events: none;
+    }
+
+    .pill-nav {
+      pointer-events: none;
+      width: min(100%, var(--content));
+      min-height: 56px;
+      display: block;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      border-radius: 16px;
+      box-shadow: none;
+      opacity: 0;
+    }
+
+    .pill-nav.is-solid {
+      opacity: 1;
+    }
+
+    .pill-brand-slot {
+      width: 100%;
+      height: 56px;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Shared brand that morphs from hero into nav */
+    .brand-morph {
+      position: fixed;
+      z-index: 50;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      left: 0;
+      top: 0;
+      padding: 8px 12px 8px 8px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 32px rgba(18, 23, 34, 0.12);
+      color: var(--text);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      pointer-events: auto;
+      overflow: hidden;
+      will-change: transform, width, height, padding, border-radius;
+      transform: translate3d(-9999px, -9999px, 0);
+    }
+
+    .brand-morph img {
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 1px rgba(18, 23, 34, 0.06);
+    }
+
+    .brand-morph span {
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .brand-morph-meta {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-left: auto;
+      min-width: 0;
+      opacity: 0;
+      transform: translateX(8px);
+      pointer-events: none;
+      transition:
+        opacity 220ms var(--ease-out),
+        transform 220ms var(--ease-out);
+    }
+
+    .brand-morph.is-nav .brand-morph-meta {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .brand-morph-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .pill-cta,
+    .foot-cta {
+      justify-self: end;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 0 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.45);
+      background: linear-gradient(180deg, #3a3f48 0%, #1c1f24 55%, #0e1013 100%);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+        0 4px 10px rgba(14, 16, 19, 0.28),
+        0 1px 2px rgba(14, 16, 19, 0.2);
+      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+      transition:
+        transform 140ms var(--ease-out),
+        background 180ms var(--ease-out),
+        box-shadow 180ms var(--ease-out);
+    }
+
+    .pill-cta .btn-icon,
+    .foot-cta .btn-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+      flex-shrink: 0;
+      display: block;
+      line-height: 1;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .pill-cta:hover,
+      .foot-cta:hover {
+        background: linear-gradient(180deg, #4a505a 0%, #252830 50%, #14161a 100%);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.28),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+          0 6px 14px rgba(14, 16, 19, 0.34),
+          0 2px 4px rgba(14, 16, 19, 0.22);
+      }
+    }
+
+    .pill-cta:active,
+    .foot-cta:active {
+      transform: scale(0.97);
+      background: linear-gradient(180deg, #1c1f24 0%, #0e1013 100%);
+      box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.45),
+        0 1px 2px rgba(14, 16, 19, 0.2);
+    }
+
+    /* Page shell — content column only; hero/footer stay full-bleed */
+    main#top {
+      width: 100%;
+      position: relative;
+    }
+
+    .page {
+      width: min(100% - 32px, var(--content));
+      margin: 0 auto;
+      padding: 0;
+      position: relative;
+    }
+
+    /* Side dashes */
+    .rail {
+      position: fixed;
+      left: max(12px, env(safe-area-inset-left, 0px));
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 30;
+    }
+
+    .rail a {
+      width: 18px;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(18, 23, 34, 0.14);
+      transition: background 180ms var(--ease-out), width 180ms var(--ease-out);
+    }
+
+    .rail a[aria-current="true"],
+    .rail a:hover {
+      width: 26px;
+      background: var(--blue-ink);
+    }
+
+    /* Hero */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      border-radius: 0;
+      background:
+        radial-gradient(90% 70% at 50% 0%, rgba(255, 255, 255, 0.18), transparent 50%),
+        linear-gradient(160deg, #4d82ff 0%, var(--blue-ink) 45%, var(--blue-deep) 100%);
+      border: none;
+      border-bottom: 1px solid rgba(47, 107, 255, 0.28);
+      padding: 20px clamp(36px, 6vw, 72px) clamp(24px, 4vw, 36px);
+      text-align: center;
+      color: #fff;
+      box-shadow: none;
+    }
+
+    .hero-rain {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 4% 0;
+      overflow: hidden;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .hero-rain-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: var(--size, 12px);
+      line-height: 1.3;
+      font-weight: 500;
+      color: rgba(255, 255, 255, var(--alpha, 0.32));
+      letter-spacing: 0.02em;
+      white-space: pre;
+      filter: blur(var(--blur, 0px));
+      text-shadow: 0 0 14px rgba(255, 255, 255, 0.1);
+      animation: rain-drift var(--dur, 9s) linear infinite;
+      animation-delay: var(--delay, 0s);
+      opacity: var(--op, 0.75);
+      transform: translateY(var(--y, 0%));
+    }
+
+    .hero-rain-col span {
+      display: block;
+      font-size: var(--digit-size, 1em);
+      opacity: var(--digit-op, 1);
+      filter: blur(var(--digit-blur, 0px));
+      line-height: 1.28;
+    }
+
+    @keyframes rain-drift {
+      from { transform: translateY(-10%); }
+      to { transform: translateY(10%); }
+    }
+
+    .hero > *:not(.hero-rain) { position: relative; z-index: 1; }
+
+    .hero-brand-anchor {
+      width: 200px;
+      height: 64px;
+      margin: 0 auto 56px;
+    }
+
+    .hero-title {
+      max-width: none;
+      margin: 48px auto 0;
+      font-size: clamp(26px, 3.8vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      white-space: nowrap;
+      color: #fff;
+    }
+
+    .hero-lede {
+      max-width: 58ch;
+      margin: 14px auto 0;
+      font-size: 15px;
+      line-height: 1.5;
+      color: rgba(255, 255, 255, 0.82);
+      text-wrap: balance;
+    }
+
+    .hero-media {
+      width: min(100%, 820px);
+      margin: 24px auto 0;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.45) inset,
+        0 28px 56px rgba(18, 23, 34, 0.22);
+      aspect-ratio: 16 / 9;
+    }
+
+    .hero-media video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Sections */
+    .sections {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      margin-top: 48px;
+      padding: 0 4px;
+    }
+
+    .section {
+      scroll-margin-top: 96px;
+      max-width: none;
+      width: 100%;
+    }
+
+    .section h2 {
+      font-size: clamp(24px, 3vw, 30px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .section p {
+      font-size: 15px;
+      color: var(--muted);
+      max-width: none;
+    }
+
+    .section p + p { margin-top: 10px; }
+
+    .section code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+      color: var(--text);
+      background: var(--blue-soft);
+      border: 1px solid rgba(47, 107, 255, 0.14);
+      border-radius: 6px;
+      padding: 1px 6px;
+    }
+
+    #specs {
+      max-width: none;
+    }
+
+    .spec-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .spec-list li {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+      padding: 16px;
+      border-radius: 14px;
+      background: var(--surface-solid, #fff);
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 0 rgba(18, 23, 34, 0.03);
+    }
+
+    .spec-head {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      max-width: 100%;
+      padding: 8px 12px 8px 10px;
+      border-radius: 10px;
+      background: var(--blue-ink);
+      color: #fff;
+    }
+
+    .spec-head i {
+      font-size: 18px;
+      line-height: 1;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .spec-head strong {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      line-height: 1.2;
+      color: #fff;
+    }
+
+    .spec-list li > span {
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    @media (max-width: 640px) {
+      .spec-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .user-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .user-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 88px;
+      padding: 16px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface-solid, #fff);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--blue-ink);
+      text-align: center;
+      box-shadow: 0 1px 0 rgba(18, 23, 34, 0.03);
+    }
+
+    .user-chip i {
+      color: var(--blue-ink);
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    @media (max-width: 640px) {
+      .user-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .media-block {
+      margin-top: 16px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--sidebar);
+      border: 1px solid var(--border);
+      aspect-ratio: 16 / 9;
+    }
+
+    .media-block video,
+    .media-block img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .section-figure {
+      margin-top: 20px;
+      background: transparent;
+    }
+
+    .section-figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .compare {
+      --pos: 52%;
+      position: relative;
+      width: min(100%, 720px);
+      margin: 20px auto 0;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #121722;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      cursor: ew-resize;
+      aspect-ratio: 16 / 9;
+    }
+
+    .compare-cipher,
+    .compare-plain {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+    }
+
+    .compare-cipher {
+      z-index: 1;
+      overflow: hidden;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent 0 21px,
+          rgba(47, 107, 255, 0.045) 21px 22px
+        ),
+        #0c1018;
+      color: #c2d4ff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      pointer-events: none;
+    }
+
+    .compare-cipher-dump {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      padding: 12px 0;
+      font-size: 12px;
+      line-height: 1.35;
+      letter-spacing: 0.02em;
+      white-space: pre;
+      overflow: hidden;
+      color: #9eb6ff;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .compare-plain {
+      z-index: 2;
+      width: var(--pos);
+      overflow: hidden;
+    }
+
+    .compare-plain img {
+      width: var(--compare-w, 100%);
+      max-width: none;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+
+    .compare-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: var(--pos);
+      z-index: 3;
+      width: 2px;
+      margin-left: -1px;
+      background: #fff;
+      box-shadow: 0 0 0 1px rgba(18, 23, 34, 0.12);
+      pointer-events: none;
+    }
+
+    .compare-knob {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 44px;
+      height: 44px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: var(--blue-ink);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      box-shadow:
+        0 8px 24px rgba(47, 107, 255, 0.35),
+        0 0 0 3px rgba(255, 255, 255, 0.95);
+      font-size: 18px;
+    }
+
+    .compare-label {
+      position: absolute;
+      top: 14px;
+      z-index: 4;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: rgba(18, 23, 34, 0.72);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+    }
+
+    .compare-label.plain { left: 14px; }
+    .compare-label.cipher { right: 14px; }
+
+    .future-list {
+      list-style: none;
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .future-list li {
+      position: relative;
+      padding-left: 18px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .future-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.55em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--blue-ink);
+    }
+
+    .foot {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: none;
+      margin: 56px 0 0;
+      padding: 0;
+      border-top: none;
+      border-radius: 0;
+      background: #0e1013;
+      aspect-ratio: 16 / 9;
+      max-height: min(72vh, 720px);
+      color: #fff;
+    }
+
+    .foot-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    .foot-shade {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(14, 16, 19, 0.08) 0%, rgba(14, 16, 19, 0.18) 45%, rgba(14, 16, 19, 0.72) 100%);
+      pointer-events: none;
+    }
+
+    .foot-card {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 1;
+      transform: translate(-50%, -50%);
+      width: min(100% - 40px, 420px);
+      padding: 28px 28px 24px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow:
+        0 24px 60px rgba(8, 10, 14, 0.45),
+        0 1px 0 rgba(255, 255, 255, 0.8) inset;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .foot-card p {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.015em;
+      line-height: 1.45;
+      color: var(--text);
+    }
+
+    .foot-card .foot-cta {
+      margin-top: 16px;
+      width: 100%;
+    }
+
+    @media (max-width: 980px) {
+      .rail { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .page { width: min(100% - 20px, var(--content)); }
+      .hero {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+      .hero-brand-anchor {
+        width: 180px;
+        height: 58px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .hero-title {
+        white-space: normal;
+        max-width: 12em;
+        text-wrap: balance;
+      }
+      .brand-morph-label { display: none; }
+      .sections { gap: 32px; margin-top: 36px; }
+      .section h2 { font-size: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .pill-nav { opacity: 1; }
+      .brand-morph,
+      .brand-morph-meta {
+        transition: none !important;
+      }
+      .brand-morph.is-nav .brand-morph-meta {
+        opacity: 1;
+        transform: none;
+      }
+      .hero-rain-col {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="brand-morph" id="brand-morph">
+    <a href="#top" aria-label="Stone Vault home" style="display:inline-flex;align-items:center;gap:inherit;color:inherit;text-decoration:none;flex-shrink:0;">
+      <img src="stone-vault-logo.png" alt="" width="44" height="44" />
+      <span>Stone Vault</span>
+    </a>
+    <div class="brand-morph-meta">
+      <span class="brand-morph-label">Project brief</span>
+      <a class="pill-cta" href="#demo">
+        <i class="ph-fill ph-play btn-icon" aria-hidden="true"></i>
+        Watch demo
+      </a>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <nav class="pill-nav" id="pill-nav" aria-label="Project">
+      <div class="pill-brand-slot" id="brand-slot" aria-hidden="true"></div>
+    </nav>
+  </header>
+
+  <nav class="rail" aria-label="Sections">
+    <a href="#intro" aria-label="Intro" aria-current="true"></a>
+    <a href="#problem" aria-label="Problem"></a>
+    <a href="#solution" aria-label="Solution"></a>
+    <a href="#specs" aria-label="Specs"></a>
+    <a href="#users" aria-label="Users"></a>
+    <a href="#demo" aria-label="Demo"></a>
+    <a href="#future" aria-label="Future"></a>
+  </nav>
+
+  <main id="top">
+    <section class="hero" id="intro">
+      <div class="hero-rain" id="hero-rain" aria-hidden="true"></div>
+      <div class="hero-brand-anchor" id="brand-anchor" aria-hidden="true"></div>
+      <h1 class="hero-title">Encrypt before the Drive sees it</h1>
+      <p class="hero-lede">Stone Vault encrypts your files on this computer before they reach Google Drive.<br />Drive only stores scrambled data. You unlock and open them here.</p>
+      <div class="hero-media">
+        <video
+          controls
+          autoplay
+          muted
+          playsinline
+          preload="auto"
+          poster="how-it-works.jpg"
+          src="video/out/stone-vault-narrated.mp4"
+        >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </section>
+
+    <div class="page sections">
+      <section class="section" id="problem">
+        <h2>Problem</h2>
+        <p>
+          Storing passports, tax returns, or client contracts in Google Drive still leaves readable files and readable names with the provider. Cloud-held data has been breached before, and companies have used customer data in ways people did not expect. What feels safe today is not a fixed promise.
+        </p>
+        <figure class="section-figure">
+          <img
+            src="problem-cloud-privacy.png?v=2"
+            alt="News and public reaction about cloud privacy policy changes and how personal data can be used"
+            width="2400"
+            height="943"
+            loading="lazy"
+          />
+        </figure>
+      </section>
+
+      <section class="section" id="solution">
+        <h2>Solution</h2>
+        <p>
+          Stone Vault is an on-device encryption gateway. You upload, retrieve, download, or view files through the gateway. Files stay encrypted in Drive as scrambled <code>.lkdv</code> blobs with random names, and only decrypt on the gateway. The passphrase never leaves this machine.
+        </p>
+        <div
+          class="compare"
+          id="solution-compare"
+          role="slider"
+          aria-label="Compare without Stone Vault and with Stone Vault. Drag left for ciphertext, right for the original."
+          aria-valuemin="8"
+          aria-valuemax="92"
+          aria-valuenow="52"
+          tabindex="0"
+        >
+          <span class="compare-label plain">Without Stone Vault</span>
+          <span class="compare-label cipher">With Stone Vault</span>
+          <div class="compare-cipher" aria-hidden="true">
+            <pre class="compare-cipher-dump" id="solution-cipher-dump"></pre>
+          </div>
+          <div class="compare-plain">
+            <img src="solution-plain.jpg?v=3" alt="Original readable file" draggable="false" />
+          </div>
+          <div class="compare-handle" aria-hidden="true">
+            <span class="compare-knob">
+              <i class="ph-bold ph-arrows-left-right"></i>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="specs">
+        <h2>Specs</h2>
+        <ul class="spec-list">
+          <li>
+            <div class="spec-head">
+              <i class="ph-fill ph-lock-key" aria-hidden="true"></i>
+              <strong>Strongest encryption</strong>
+            </div>
+            <span>Each file is locked with AES-256-GCM. Keys come from your passphrase through Argon2id with a unique salt, so the same passphrase still produces different keys per vault.</span>
+          </li>
+          <li>
+            <div class="spec-head">
+              <i class="ph-fill ph-plugs-connected" aria-hidden="true"></i>
+              <strong>Single channel access</strong>
+            </div>
+            <span>Files can only be opened through Stone Vault on a machine that has the passphrase. Drive alone is not enough to read them.</span>
+          </li>
+          <li>
+            <div class="spec-head">
+              <i class="ph-fill ph-layout" aria-hidden="true"></i>
+              <strong>User friendly interface</strong>
+            </div>
+            <span>The UI stays close to a normal Drive-style vault, so a new user can upload, browse, and open files without learning a new system.</span>
+          </li>
+          <li>
+            <div class="spec-head">
+              <i class="ph-fill ph-google-drive-logo" aria-hidden="true"></i>
+              <strong>Existing cloud</strong>
+            </div>
+            <span>You keep Google Drive for storage and sync. Stone Vault adds the encryption layer on top, so there is no need to switch clouds.</span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="section" id="users">
+        <h2>Users</h2>
+        <p>
+          People who already use Drive for backup, but keep files they would rather not leave readable: IDs and medical scans, tax and bank PDFs, client contracts, or anything on a shared home computer.
+        </p>
+        <div class="user-row">
+          <span class="user-chip"><i class="ph-fill ph-identification-card" aria-hidden="true"></i>IDs &amp; medical</span>
+          <span class="user-chip"><i class="ph-fill ph-receipt" aria-hidden="true"></i>Taxes &amp; banking</span>
+          <span class="user-chip"><i class="ph-fill ph-briefcase" aria-hidden="true"></i>Client work</span>
+          <span class="user-chip"><i class="ph-fill ph-folder-simple" aria-hidden="true"></i>Personal files</span>
+        </div>
+      </section>
+
+      <section class="section" id="demo">
+        <h2>Demo</h2>
+        <p>
+          Encrypt on device, opaque blob in Drive, decrypt only when you open the file here. Same beats as the app.
+        </p>
+        <div class="media-block">
+          <video
+            controls
+            autoplay
+            muted
+            playsinline
+            preload="metadata"
+            src="demo-web.mp4"
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </section>
+
+      <section class="section" id="future">
+        <h2>Future</h2>
+        <ul class="future-list">
+          <li>Share access to a vault without handing over the passphrase</li>
+          <li>Unlock and browse from a phone</li>
+          <li>Optional backends beyond Google Drive</li>
+        </ul>
+      </section>
+    </div>
+
+    <footer class="foot">
+      <video
+        class="foot-video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        aria-hidden="true"
+        src="ui-camera-loop-web.mp4"
+      ></video>
+      <div class="foot-shade" aria-hidden="true"></div>
+      <div class="foot-card">
+        <p>The product is under development. Be one of the first to try it.</p>
+        <a
+          class="foot-cta"
+          href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=harshalj0815@gmail.com&amp;su=Request%20to%20try%20Stone%20Vault&amp;body=Hi%20Harshal%2C%0A%0AI%27d%20like%20to%20be%20one%20of%20the%20first%20to%20try%20Stone%20Vault%20once%20development%20is%20further%20along.%0A%0APlease%20let%20me%20know%20when%20I%20can%20get%20access.%0A%0AThanks%2C"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <i class="ph-fill ph-paper-plane-tilt btn-icon" aria-hidden="true"></i>
+          Request Demo
+        </a>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      var rain = document.getElementById("hero-rain");
+      if (!rain) return;
+      var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var cols = 0;
+      var rows = 48;
+      var nodes = [];
+
+      function randDigit() {
+        return String(Math.floor(Math.random() * 10));
+      }
+
+      function pickColStyle() {
+        var tier = Math.random();
+        if (tier < 0.28) {
+          // Large, soft, far
+          return {
+            size: (18 + Math.random() * 16).toFixed(1) + "px",
+            blur: (1.2 + Math.random() * 2.4).toFixed(2) + "px",
+            alpha: (0.1 + Math.random() * 0.14).toFixed(2),
+            op: (0.35 + Math.random() * 0.3).toFixed(2),
+            dur: (10 + Math.random() * 6).toFixed(1) + "s"
+          };
+        }
+        if (tier < 0.62) {
+          // Medium
+          return {
+            size: (12 + Math.random() * 6).toFixed(1) + "px",
+            blur: (Math.random() * 1.1).toFixed(2) + "px",
+            alpha: (0.2 + Math.random() * 0.18).toFixed(2),
+            op: (0.5 + Math.random() * 0.35).toFixed(2),
+            dur: (8 + Math.random() * 5).toFixed(1) + "s"
+          };
+        }
+        // Small, sharper, nearer
+        return {
+          size: (9 + Math.random() * 4).toFixed(1) + "px",
+          blur: (Math.random() * 0.4).toFixed(2) + "px",
+          alpha: (0.28 + Math.random() * 0.22).toFixed(2),
+          op: (0.65 + Math.random() * 0.3).toFixed(2),
+          dur: (6.5 + Math.random() * 4).toFixed(1) + "s"
+        };
+      }
+
+      function build() {
+        rain.innerHTML = "";
+        nodes = [];
+        cols = window.innerWidth < 700 ? 14 : window.innerWidth < 1100 ? 22 : 30;
+        for (var c = 0; c < cols; c++) {
+          var col = document.createElement("div");
+          var style = pickColStyle();
+          col.className = "hero-rain-col";
+          col.style.setProperty("--delay", (-Math.random() * 10).toFixed(2) + "s");
+          col.style.setProperty("--size", style.size);
+          col.style.setProperty("--blur", style.blur);
+          col.style.setProperty("--alpha", style.alpha);
+          col.style.setProperty("--op", style.op);
+          col.style.setProperty("--dur", style.dur);
+          var html = "";
+          for (var r = 0; r < rows; r++) {
+            var digitSize = (0.75 + Math.random() * 0.7).toFixed(2);
+            var digitOp = (0.35 + Math.random() * 0.65).toFixed(2);
+            var digitBlur = Math.random() > 0.82
+              ? (0.4 + Math.random() * 1.6).toFixed(2) + "px"
+              : "0px";
+            html +=
+              '<span style="--digit-size:' + digitSize +
+              "em;--digit-op:" + digitOp +
+              ";--digit-blur:" + digitBlur +
+              '">' + randDigit() + "</span>";
+          }
+          col.innerHTML = html;
+          rain.appendChild(col);
+          nodes.push(col.querySelectorAll("span"));
+        }
+      }
+
+      function tick() {
+        if (!nodes.length) return;
+        for (var n = 0; n < 28; n++) {
+          var col = nodes[Math.floor(Math.random() * nodes.length)];
+          if (!col || !col.length) continue;
+          var cell = col[Math.floor(Math.random() * col.length)];
+          if (!cell) continue;
+          cell.textContent = randDigit();
+          if (Math.random() > 0.7) {
+            cell.style.setProperty("--digit-op", (0.35 + Math.random() * 0.65).toFixed(2));
+          }
+        }
+      }
+
+      build();
+      if (!reduce) {
+        window.setInterval(tick, 85);
+      }
+      var resizeTimer;
+      window.addEventListener("resize", function () {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(build, 180);
+      });
+    })();
+
+    (function () {
+      var brand = document.getElementById("brand-morph");
+      var anchor = document.getElementById("brand-anchor");
+      var slot = document.getElementById("brand-slot");
+      var nav = document.getElementById("pill-nav");
+      var hero = document.getElementById("intro");
+      if (!brand || !anchor || !slot || !nav || !hero) return;
+
+      var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var brandImg = brand.querySelector("img");
+      var brandText = brand.querySelector("a span");
+      var current = 0;
+      var target = 0;
+      var raf = 0;
+
+      function lerp(a, b, t) { return a + (b - a) * t; }
+      function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+      function easeInOut(t) {
+        return t < 0.5
+          ? 4 * t * t * t
+          : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+
+      function targetProgress() {
+        var rect = hero.getBoundingClientRect();
+        // Morph while the hero is still on screen
+        var travel = Math.min(window.innerHeight * 0.55, Math.max(180, rect.height * 0.38));
+        return clamp((-rect.top) / travel, 0, 1);
+      }
+
+      function apply(progress) {
+        var t = easeInOut(clamp(progress, 0, 1));
+        var from = anchor.getBoundingClientRect();
+        var to = slot.getBoundingClientRect();
+
+        var fromW = Math.max(from.width, 200);
+        var fromH = Math.max(from.height, 64);
+        var toW = Math.max(to.width, 280);
+        var toH = Math.max(to.height, 56);
+
+        var w = lerp(fromW, toW, t);
+        var h = lerp(fromH, toH, t);
+        var x = lerp(from.left, to.left, t);
+        var y = lerp(from.top, to.top, t);
+
+        var pad = 8;
+        x = clamp(x, pad, window.innerWidth - w - pad);
+        y = clamp(y, pad, window.innerHeight - h - pad);
+
+        brand.style.width = w + "px";
+        brand.style.height = h + "px";
+        brand.style.transform = "translate3d(" + x + "px," + y + "px,0)";
+
+        // Larger logo at start, slightly smaller when docked in nav
+        var logo = Math.round(lerp(48, 32, t));
+        brand.style.gap = lerp(12, 10, t) + "px";
+        brand.style.padding =
+          lerp(8, 8, t) + "px " +
+          lerp(12, 10, t) + "px " +
+          lerp(8, 8, t) + "px " +
+          lerp(8, 8, t) + "px";
+        brand.style.borderRadius = lerp(14, 16, t) + "px";
+        if (brandImg) {
+          brandImg.style.width = logo + "px";
+          brandImg.style.height = logo + "px";
+          brandImg.style.borderRadius = Math.round(logo * 0.28) + "px";
+        }
+        if (brandText) brandText.style.fontSize = lerp(16, 14, t) + "px";
+
+        var solid = t > 0.82;
+        brand.classList.toggle("is-nav", t > 0.55 || reduce);
+        nav.classList.toggle("is-solid", solid || reduce);
+        brand.style.boxShadow = t > 0.85
+          ? "0 8px 28px rgba(18, 23, 34, 0.06)"
+          : "0 12px 32px rgba(18, 23, 34, 0.12)";
+        brand.style.borderColor = "rgba(18, 23, 34, 0.10)";
+        brand.style.background = "#fff";
+      }
+
+      function tick() {
+        target = reduce ? 1 : targetProgress();
+        // Smooth follow so the morph eases within the viewport
+        current = reduce ? 1 : lerp(current, target, 0.18);
+        if (Math.abs(current - target) < 0.001) current = target;
+        apply(current);
+        if (!reduce && Math.abs(current - target) > 0.001) {
+          raf = window.requestAnimationFrame(tick);
+        } else {
+          raf = 0;
+        }
+      }
+
+      function kick() {
+        if (raf) return;
+        raf = window.requestAnimationFrame(tick);
+      }
+
+      window.addEventListener("scroll", kick, { passive: true });
+      window.addEventListener("resize", function () {
+        current = targetProgress();
+        kick();
+      });
+      kick();
+    })();
+
+    (function () {
+      var links = Array.prototype.slice.call(document.querySelectorAll(".rail a"));
+      var ids = links.map(function (a) {
+        return a.getAttribute("href").slice(1);
+      });
+      var sections = ids
+        .map(function (id) { return document.getElementById(id); })
+        .filter(Boolean);
+
+      if (!("IntersectionObserver" in window) || !sections.length) return;
+
+      var observer = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var id = entry.target.id;
+            links.forEach(function (link) {
+              var active = link.getAttribute("href") === "#" + id;
+              if (active) link.setAttribute("aria-current", "true");
+              else link.removeAttribute("aria-current");
+            });
+          });
+        },
+        { rootMargin: "-40% 0px -45% 0px", threshold: 0.01 }
+      );
+
+      sections.forEach(function (section) { observer.observe(section); });
+    })();
+
+    (function () {
+      var root = document.getElementById("solution-compare");
+      if (!root) return;
+      var dump = document.getElementById("solution-cipher-dump");
+      var min = 8;
+      var max = 92;
+      var pos = 52;
+      var dragging = false;
+
+      function fillCipherDump() {
+        if (!dump) return;
+        var pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*_+-=[]{};:,.<>?/|";
+        var seed = 7;
+        function rnd() {
+          seed = (seed * 1664525 + 1013904223) >>> 0;
+          return seed / 4294967296;
+        }
+
+        var width = root.clientWidth || 900;
+        var height = root.clientHeight || 500;
+        var fontSize = Math.max(11, Math.min(14, Math.round(width / 72)));
+        var lineHeight = fontSize * 1.35;
+        dump.style.fontSize = fontSize + "px";
+        dump.style.lineHeight = "1.35";
+
+        var charW = fontSize * 0.6;
+        var cols = Math.ceil(width / charW) + 6;
+        var rows = Math.ceil(height / lineHeight) + 6;
+        var lines = [];
+        for (var r = 0; r < rows; r++) {
+          var line = "|";
+          for (var c = 0; c < cols; c++) {
+            line += pool.charAt(Math.floor(rnd() * pool.length));
+          }
+          lines.push(line);
+        }
+        dump.textContent = lines.join("\n");
+      }
+
+      function syncWidth() {
+        root.style.setProperty("--compare-w", root.offsetWidth + "px");
+        fillCipherDump();
+      }
+
+      fillCipherDump();
+
+      function setPos(next) {
+        pos = Math.max(min, Math.min(max, next));
+        root.style.setProperty("--pos", pos + "%");
+        root.setAttribute("aria-valuenow", String(Math.round(pos)));
+      }
+
+      function posFromEvent(event) {
+        var rect = root.getBoundingClientRect();
+        var clientX = event.touches && event.touches[0]
+          ? event.touches[0].clientX
+          : event.clientX;
+        return ((clientX - rect.left) / rect.width) * 100;
+      }
+
+      function onMove(event) {
+        if (!dragging) return;
+        if (event.cancelable) event.preventDefault();
+        setPos(posFromEvent(event));
+      }
+
+      function onUp() {
+        dragging = false;
+      }
+
+      syncWidth();
+      setPos(pos);
+      window.addEventListener("resize", syncWidth);
+
+      root.addEventListener("pointerdown", function (event) {
+        dragging = true;
+        root.setPointerCapture(event.pointerId);
+        setPos(posFromEvent(event));
+      });
+      root.addEventListener("pointermove", onMove);
+      root.addEventListener("pointerup", onUp);
+      root.addEventListener("pointercancel", onUp);
+
+      root.addEventListener("keydown", function (event) {
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          setPos(pos - 4);
+        } else if (event.key === "ArrowRight") {
+          event.preventDefault();
+          setPos(pos + 4);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          setPos(min);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          setPos(max);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

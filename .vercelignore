@@ -1,0 +1,32 @@
+# Secrets & local vault state
+credentials.json
+token.json
+.lockdrive/
+*.key
+*.lkdv
+.env
+.env.*
+
+# Node app (local gateway — not the static site)
+node_modules/
+bin/
+src/
+scripts/
+package.json
+package-lock.json
+
+# Huge source masters (use *-web.mp4 in the site)
+design/export-1793296962892.mp4
+design/ui-camera-loop.mp4
+*.mpeg
+
+# Video toolchain / drafts
+design/video/render/
+design/video/out/stills/
+design/app.html
+design/app-client.js
+design/home-draft.html
+.git/
+.agents/
+.vscode/
+.idea/
